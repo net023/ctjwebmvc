@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ctjwebmvc 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://www.caitaojun.com/ctjwebmvc" 
+	xsi:schemaLocation="http://www.caitaojun.com/ctjwebmvc http://www.caitaojun.com/ctjwebmvc.xsd">
+	
+	<basepath package=""/>
+	
+	<integratespring switch="ON"/>
+	
+	<statusFile suffix=".jsp,.html,.png,.jpg,.js"/>
+	
+	<useAnnotation use="false"/>
+	
+	<views>
+		<view order="1" type="JSP" suffix=""></view>
+	</views>
+	
+</ctjwebmvc>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.caitaojun.com/ctjwebmvc" 
+	elementFormDefault="qualified">
+	<element name="ctjwebmvc">
+		<complexType>
+			<all>
+				<!-- 是否开启注解开发 -->
+				<element name="useAnnotation" minOccurs="0" maxOccurs="1">
+					<complexType>
+						<simpleContent>
+							<extension base="string">
+								<attribute name="use" use="required">
+									<simpleType>
+										<restriction base="string">
+											<enumeration value="false"/>
+											<enumeration value="true"/>
+										</restriction>
+									</simpleType>
+								</attribute>
+							</extension>
+						</simpleContent>
+					</complexType>
+				</element>
+				<!-- 注解扫描路径 -->
+				<element name="basepath" minOccurs="0">
+					<complexType>
+						<simpleContent>
+							<extension base="string">
+								<attribute name="package" use="required" type="string"/>
+							</extension>
+						</simpleContent>
+					</complexType>
+				</element>
+				<!-- 集成spring容器 从spring容器中创建获取controller实体 -->
+				<element name="integratespring" minOccurs="1">
+					<complexType>
+						<simpleContent>
+							<extension base="string">
+								<attribute name="switch" use="required">
+									<simpleType>
+										<restriction base="string">
+											<enumeration value="ON"/>
+											<enumeration value="OFF"/>
+										</restriction>
+									</simpleType>
+								</attribute>
+							</extension>
+						</simpleContent>
+					</complexType>
+				</element>
+				<!-- 静态文件放行 -->
+				<element name="statusFile" minOccurs="1">
+					<complexType>
+						<simpleContent>
+							<extension base="string">
+								<attribute name="suffix" use="optional" type="string" default=".jsp,.html,.png,.jpg,.js"/>
+							</extension>
+						</simpleContent>
+					</complexType>
+				</element>
+				<!-- 返回页面类型、路径、后缀 -->
+				<element name="views" minOccurs="1" maxOccurs="1">
+					<annotation>
+						<documentation>
+							视图配置
+						</documentation>
+					</annotation>
+					<complexType>
+						<sequence>
+							<element name="view" minOccurs="1" maxOccurs="3">
+								<complexType>
+									<simpleContent>
+										<extension base="string">
+											<attribute name="type" use="required" >
+												<annotation>
+													<documentation>
+														视图技术类型
+													</documentation>
+												</annotation>
+												<simpleType>
+													<restriction base="string">
+														<enumeration value="JSP"/>
+														<enumeration value="HTML"/>
+														<enumeration value="FREEMARKER"/>
+													</restriction>
+												</simpleType>
+											</attribute>
+											<attribute name="path" use="optional" type="string" default="/WEB-INF/pages/">
+												<annotation>
+													<documentation>
+														文件所在位置
+													</documentation>
+												</annotation>
+											</attribute>
+											<attribute name="suffix" use="required" type="string">
+												<annotation>
+													<documentation>
+														文件后缀
+													</documentation>
+												</annotation>
+											</attribute>
+											<attribute name="order" use="required" type="integer">
+												<annotation>
+													<documentation>
+														顺序
+													</documentation>
+												</annotation>
+											</attribute>
+										</extension>
+									</simpleContent>
+								</complexType>
+							</element>
+						</sequence>
+					</complexType>
+				</element>
+				<!-- 常量 -->
+				<element name="constants" maxOccurs="1" minOccurs="0">
+					<complexType>
+						<sequence>
+							<element name="constant" maxOccurs="unbounded">
+								<complexType>
+									<attribute name="key" type="string" use="required"/>
+									<attribute name="value" type="string" use="required"/>
+								</complexType>
+							</element>
+						</sequence>
+					</complexType>
+				</element>
+				<!-- 拦截器 -->
+				<element name="interceptors" maxOccurs="1" minOccurs="0">
+					<complexType>
+						<sequence>
+							<element name="interceptor" maxOccurs="unbounded">
+								<complexType>
+									<attribute name="class" type="string" use="required"/>
+									<attribute name="order" type="integer" use="required"/>
+								</complexType>
+							</element>
+						</sequence>
+					</complexType>
+				</element>
+				<!-- action -->
+				<element name="actions" maxOccurs="1" minOccurs="0">
+					<complexType>
+							<sequence>
+								<element name="action" maxOccurs="unbounded" minOccurs="0">
+									<complexType>
+										<sequence>
+											<element name="reqmethod" minOccurs="0" maxOccurs="unbounded">
+												<complexType>
+													<simpleContent>
+														<extension base="string">
+															<attribute name="type" use="required">
+																<simpleType>
+																	<restriction base="string">
+																		<enumeration value="POST"/>
+																		<enumeration value="GET"/>
+																		<enumeration value="PUT"/>
+																		<enumeration value="DELETE"/>
+																		<enumeration value="ANY"/>
+																	</restriction>
+																</simpleType>
+															</attribute>
+														</extension>
+													</simpleContent>
+												</complexType>
+											</element>
+											<element name="acceptType" minOccurs="0" maxOccurs="unbounded">
+												<complexType>
+													<simpleContent>
+														<extension base="string">
+															<attribute name="type" use="required">
+																<simpleType>
+																	<restriction base="string">
+																		<enumeration value="application/json;charset=utf-8"/>
+																		<enumeration value="text/html;charset=utf-8"/>
+																	</restriction>
+																</simpleType>
+															</attribute>
+														</extension>
+													</simpleContent>
+												</complexType>
+											</element>
+											<element name="produceType" minOccurs="0" maxOccurs="unbounded">
+												<complexType>
+													<simpleContent>
+														<extension base="string">
+															<attribute name="type" use="required">
+																<simpleType>
+																	<restriction base="string">
+																		<enumeration value="application/json;charset=utf-8"/>
+																		<enumeration value="text/html;charset=utf-8"/>
+																	</restriction>
+																</simpleType>
+															</attribute>
+														</extension>
+													</simpleContent>
+												</complexType>
+											</element>
+											<element name="param" minOccurs="0" maxOccurs="unbounded">
+												<complexType>
+													<simpleContent>
+														<extension base="string">
+															<attribute name="class" use="required">
+																<!-- <simpleType>
+																	<restriction base="string">
+																		<enumeration value="javax.servlet.http.HttpServletRequest"/>
+																		<enumeration value="javax.servlet.http.HttpServletResponse"/>
+																		<enumeration value="java.util.Map"/>
+																	</restriction>
+																</simpleType> -->
+															</attribute>
+														</extension>
+													</simpleContent>
+												</complexType>
+											</element>
+											<element name="result" minOccurs="0" maxOccurs="unbounded">
+												<complexType>
+													<simpleContent>
+														<extension base="string">
+															<attribute name="type" use="required">
+																<simpleType>
+																	<restriction base="string">
+																		<enumeration value="forward"/>
+																		<enumeration value="forward_view"/>
+																		<enumeration value="redirect"/>
+																		<enumeration value="redirect_view"/>
+																		<enumeration value="json"/>
+																		<enumeration value="file"/>
+																	</restriction>
+																</simpleType>
+															</attribute>
+															<attribute name="name" type="string" use="required"/>
+															<attribute name="path">
+																<simpleType>
+																	<restriction base="string">
+																		<minLength value="2"/>
+																	</restriction>
+																</simpleType>
+															</attribute>
+														</extension>
+													</simpleContent>
+												</complexType>
+											</element>
+										</sequence>
+										<attribute name="name" use="required" type="string"></attribute>
+										<attribute name="class" use="required" type="string"></attribute>
+										<attribute name="method" use="optional" type="string" default="execute"/>
+									</complexType>
+								</element>
+							</sequence>
+						</complexType>
+				</element>
+			</all>
+		</complexType>
+	</element>
+</schema>
