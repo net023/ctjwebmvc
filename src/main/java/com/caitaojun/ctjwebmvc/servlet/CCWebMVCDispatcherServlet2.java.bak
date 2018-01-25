@@ -7,6 +7,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,20 +65,23 @@ import com.caitaojun.ctjwebmvc.model.View;
 import com.caitaojun.ctjwebmvc.proxy.ActionProxy;
 import com.caitaojun.ctjwebmvc.proxy.ProxyMethodInterceptor;
 import com.caitaojun.ctjwebmvc.utils.ClassSearchUtil;
-import com.caitaojun.ctjwebmvc.utils.MethodParameterAnnotationUtil;
 import com.caitaojun.ctjwebmvc.utils.MyDateConverter;
 import com.caitaojun.ctjwebmvc.utils.ValidataConfigurationFileUtil;
 
+import javassist.ClassClassPath;
 import javassist.ClassPool;
+import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.expr.MethodCall;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 /**
  * 中央调度servlet
- * @author caitaojun
+ * @author caitaojun  jdk1.8
  *
  */
 @SuppressWarnings("all")
-public class CCWebMVCDispatcherServlet extends HttpServlet {
+public class CCWebMVCDispatcherServlet2 extends HttpServlet {
 
 	/**
 	 * 
@@ -183,8 +189,7 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 			for (String parameterName : parameterNames) {
 				Class parameterType = parameterInfo.get(parameterName);
 //				if(actionMapping.getMethod().getParameters()[idx].isAnnotationPresent(ReqJson.class)){
-				Annotation parameterAnnotation = MethodParameterAnnotationUtil.getMethodParameterAnnotation(actionMapping.getMethod(), idx, ReqJson.class);
-				if(null!=parameterAnnotation){
+				if(actionMapping.getMethod().getParameters()[idx].isAnnotationPresent(ReqJson.class)){
 					System.out.println(request.getContentType());
 					List<String> lines = IOUtils.readLines(request.getInputStream(), request.getCharacterEncoding());
 					StringBuffer sb = new StringBuffer();
@@ -200,9 +205,8 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 //						TypeFactory.defaultInstance().constructpara
 						
 						//1.获取泛型
-//						ParameterizedType type = (ParameterizedType) actionMapping.getMethod().getParameters()[idx].getParameterizedType();
-//						Class innerType = (Class) type.getActualTypeArguments()[0];
-						Class innerType = MethodParameterAnnotationUtil.getMethodParameterGenericType(actionMapping.getMethod(), idx);
+						ParameterizedType type = (ParameterizedType) actionMapping.getMethod().getParameters()[idx].getParameterizedType();
+						Class innerType = (Class) type.getActualTypeArguments()[0];
 						ObjectMapper om = new ObjectMapper();
 						om.disable(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
 						JavaType javaType = TypeFactory.defaultInstance().constructParametricType(parameterType, innerType);
@@ -241,14 +245,13 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 						//获取泛型
 						Class innerType = null;
 						try {
-							/*ParameterizedType type = (ParameterizedType) actionMapping.getMethod().getParameters()[idx].getParameterizedType();
+							ParameterizedType type = (ParameterizedType) actionMapping.getMethod().getParameters()[idx].getParameterizedType();
 							Type genericType = type.getActualTypeArguments()[0];
 							if(genericType.getClass().equals(ParameterizedTypeImpl.class)){
 								innerType = (Class) ((ParameterizedType)genericType).getRawType();
 							}else{
 								innerType = (Class) genericType;
-							}*/
-							innerType = MethodParameterAnnotationUtil.getMethodParameterGenericType(actionMapping.getMethod(), idx);
+							}
 						} catch (Exception e) {
 							throw new RuntimeException(actionMapping.getClazz().getName()+" 's method "+actionMapping.getMethod().getName()+" 's parameter "+parameterName+" not have generic paradig");
 						}
@@ -340,14 +343,13 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 						//获取泛型
 						Class innerType = null;
 						try {
-							/*ParameterizedType type = (ParameterizedType) actionMapping.getMethod().getParameters()[idx].getParameterizedType();
+							ParameterizedType type = (ParameterizedType) actionMapping.getMethod().getParameters()[idx].getParameterizedType();
 							Type genericType = type.getActualTypeArguments()[0];
 							if(genericType.getClass().equals(ParameterizedTypeImpl.class)){
 								innerType = (Class) ((ParameterizedType)genericType).getRawType();
 							}else{
 								innerType = (Class) genericType;
-							}*/
-							innerType = MethodParameterAnnotationUtil.getMethodParameterGenericType(actionMapping.getMethod(), idx);
+							}
 						} catch (Exception e) {
 							throw new RuntimeException(actionMapping.getClazz().getName()+" 's method "+actionMapping.getMethod().getName()+" 's parameter "+parameterName+" not have generic paradig");
 						}
@@ -437,102 +439,38 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 				     * @see     java.lang.Void#TYPE
 					 */
 					if(parameterType.equals(int.class)){
-						try {
-							param.add(Integer.parseInt(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(0);
-						}
+						param.add(Integer.parseInt(request.getParameter(parameterName)));
 					}else if(parameterType.equals(long.class)){
-						try {
-							param.add(Long.parseLong(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(0L);
-						}
+						param.add(Long.parseLong(request.getParameter(parameterName)));
 					}else if(parameterType.equals(double.class)){
-						try {
-							param.add(Double.parseDouble(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(0d);
-						}
+						param.add(Double.parseDouble(request.getParameter(parameterName)));
 					}else if(parameterType.equals(float.class)){
-						try {
-							param.add(Float.parseFloat(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(0F);
-						}
+						param.add(Float.parseFloat(request.getParameter(parameterName)));
 					}else if(parameterType.equals(short.class)){
-						try {
-							param.add(Short.parseShort(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(0);
-						}
+						param.add(Short.parseShort(request.getParameter(parameterName)));
 					}else if(parameterType.equals(byte.class)){
-						try {
-							param.add(Byte.parseByte(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(0);
-						}
+						param.add(Byte.parseByte(request.getParameter(parameterName)));
 					}else if(parameterType.equals(boolean.class)){
-						try {
-							param.add(Boolean.parseBoolean(request.getParameter(parameterName)));
-						} catch (NumberFormatException e) {
-							param.add(false);
-						}
+						param.add(Boolean.parseBoolean(request.getParameter(parameterName)));
 					}else if(parameterType.equals(char.class)){
-						try {
-							param.add(request.getParameter(parameterName).charAt(0));
-						} catch (Exception e) {
-							param.add('n');
-						}
+						param.add(request.getParameter(parameterName).charAt(0));
 					}
 				}else if(parameterType.equals(Integer.class)){
-					try {
-						param.add(Integer.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Integer.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Long.class)){
-					try {
-						param.add(Long.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Long.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Double.class)){
-					try {
-						param.add(Double.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Double.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Float.class)){
-					try {
-						param.add(Float.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Float.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Short.class)){
-					try {
-						param.add(Short.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Short.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Byte.class)){
-					try {
-						param.add(Byte.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Byte.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Boolean.class)){
-					try {
-						param.add(Boolean.valueOf(request.getParameter(parameterName)));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(Boolean.valueOf(request.getParameter(parameterName)));
 				}else if(parameterType.equals(Character.class)){
-					try {
-						param.add(request.getParameter(parameterName).charAt(0));
-					} catch (NumberFormatException e) {
-						param.add(null);
-					}
+					param.add(request.getParameter(parameterName).charAt(0));
 				}else if(parameterType.isArray()){
 //					System.out.println(parameterType.getComponentType().getName());
 					if(parameterType.isAssignableFrom(String[].class)){
@@ -611,8 +549,7 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 						String[] values = request.getParameterValues(parameterName);
 						if(null==values){
 							int maxSize = request.getParameterMap().size();
-//							Field[] fields = actionMapping.getMethod().getParameters()[idx].getType().getComponentType().getDeclaredFields();
-							Field[] fields = MethodParameterAnnotationUtil.getMethodParameterType(actionMapping.getMethod(), idx).getComponentType().getDeclaredFields();
+							Field[] fields = actionMapping.getMethod().getParameters()[idx].getType().getComponentType().getDeclaredFields();
 							List data = new ArrayList<>();
 							for (int i = 0; i <= maxSize; i++) {
 								Map<String, Object> obj = new HashMap<>();
@@ -624,8 +561,7 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 									}
 								}
 								if(!obj.isEmpty()){
-//									Object bean = actionMapping.getMethod().getParameters()[idx].getType().getComponentType().newInstance();
-									Object bean = MethodParameterAnnotationUtil.getMethodParameterType(actionMapping.getMethod(), idx).getComponentType().newInstance();
+									Object bean = actionMapping.getMethod().getParameters()[idx].getType().getComponentType().newInstance();
 									BeanUtils.populate(bean, obj);
 									data.add(bean);
 								}
@@ -640,14 +576,12 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 									}
 								}
 								if(!obj.isEmpty()){
-//									Object bean = actionMapping.getMethod().getParameters()[idx].getType().getComponentType().newInstance();
-									Object bean = MethodParameterAnnotationUtil.getMethodParameterType(actionMapping.getMethod(), idx).getComponentType().newInstance();
+									Object bean = actionMapping.getMethod().getParameters()[idx].getType().getComponentType().newInstance();
 									BeanUtils.populate(bean, obj);
 									data.add(bean);
 								}
 							}
-//							Object instance = Array.newInstance(actionMapping.getMethod().getParameters()[idx].getType().getComponentType(), data.size());
-							Object instance = Array.newInstance(MethodParameterAnnotationUtil.getMethodParameterType(actionMapping.getMethod(), idx).getComponentType(), data.size());
+							Object instance = Array.newInstance(actionMapping.getMethod().getParameters()[idx].getType().getComponentType(), data.size());
 							for (int i = 0; i < data.size(); i++) {
 								Array.set(instance, i, data.get(i));
 							}
@@ -804,7 +738,7 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 		Document document =null;
 		try {
 			document = reader
-					.read(CCWebMVCDispatcherServlet.class.getClassLoader().getResourceAsStream(contextConfigLocation));
+					.read(CCWebMVCDispatcherServlet2.class.getClassLoader().getResourceAsStream(contextConfigLocation));
 		} catch (DocumentException e) {
 			e.printStackTrace();
 		}
@@ -895,7 +829,7 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 			});
 			for (Element interceptorE : interceptorsArray) {
 				String clazz = interceptorE.attributeValue("class");
-				cfg.getInterceptors().add(Class.forName(clazz, false, CCWebMVCDispatcherServlet.class.getClassLoader()));
+				cfg.getInterceptors().add(Class.forName(clazz, false, CCWebMVCDispatcherServlet2.class.getClassLoader()));
 			}
 		}
 		
@@ -916,10 +850,10 @@ public class CCWebMVCDispatcherServlet extends HttpServlet {
 				List<Element> params = element.elements("param");
 				List<Class> paramArray = new ArrayList<>();
 				for (Element param : params) {
-					paramArray.add(Class.forName(param.attributeValue("class"), false, CCWebMVCDispatcherServlet.class.getClassLoader()));
+					paramArray.add(Class.forName(param.attributeValue("class"), false, CCWebMVCDispatcherServlet2.class.getClassLoader()));
 				}
 				
-				Class<?> clazz = Class.forName(classStr, false, CCWebMVCDispatcherServlet.class.getClassLoader());
+				Class<?> clazz = Class.forName(classStr, false, CCWebMVCDispatcherServlet2.class.getClassLoader());
 				Class[] css = new Class[10];
 				for (int i = 0; i < paramArray.size(); i++) {
 					css[i] = paramArray.get(i);
